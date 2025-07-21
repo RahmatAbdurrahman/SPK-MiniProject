@@ -1,0 +1,35 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Model untuk menyimpan kriteria penilaian SAW
+model Criterion {
+  id          String   @id @default(cuid())
+  name        String
+  description String
+  weight      Float
+  type        String // "benefit" atau "cost"
+  unit        String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// Model untuk menyimpan data influencer
+model Influencer {
+  id          String    @id @default(cuid())
+  name        String
+  category    String
+  followers   Int
+  engagement  Float
+  brandFit    Int
+  cost        Int
+  experience  Int
+  description String? // Tanda tanya (?) berarti kolom ini opsional
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}

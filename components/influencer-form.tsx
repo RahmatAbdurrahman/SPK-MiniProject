@@ -1,8 +1,7 @@
 "use client"
 
 import type React from "react"
-
-import { useState } from "react"
+import { useState, useEffect } from "react" // useEffect ditambahkan
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -21,44 +20,12 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 
-const initialInfluencers = [
-  {
-    id: 1,
-    name: "Sarah Fashion",
-    followers: 2100000,
-    engagement: 5.2,
-    brandFit: 9,
-    cost: 15000000,
-    experience: 8,
-    category: "Fashion",
-    description: "Fashion influencer dengan fokus pada style casual dan formal",
-  },
-  {
-    id: 2,
-    name: "Maya Style",
-    followers: 1800000,
-    engagement: 4.8,
-    brandFit: 8,
-    cost: 12000000,
-    experience: 7,
-    category: "Lifestyle",
-    description: "Lifestyle blogger dengan audience yang loyal",
-  },
-  {
-    id: 3,
-    name: "Rina Boutique",
-    followers: 1500000,
-    engagement: 4.5,
-    brandFit: 9,
-    cost: 10000000,
-    experience: 6,
-    category: "Fashion",
-    description: "Spesialis fashion wanita dan aksesoris",
-  },
-]
+// URL backend kita
+const API_URL = "http://localhost:3001/api";
 
 export function InfluencerForm() {
-  const [influencers, setInfluencers] = useState(initialInfluencers)
+  // Hapus data awal, kita akan ambil dari API
+  const [influencers, setInfluencers] = useState<any[]>([])
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [editingInfluencer, setEditingInfluencer] = useState<any>(null)
   const [formData, setFormData] = useState({
@@ -71,12 +38,28 @@ export function InfluencerForm() {
     category: "",
     description: "",
   })
+  
+  // Fungsi untuk mengambil data dari API
+  const fetchInfluencers = async () => {
+    try {
+      const response = await fetch(`${API_URL}/influencers`);
+      const data = await response.json();
+      setInfluencers(data);
+    } catch (error) {
+      console.error("Gagal mengambil data influencer:", error);
+    }
+  };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // Gunakan useEffect untuk mengambil data saat komponen pertama kali dimuat
+  useEffect(() => {
+    fetchInfluencers();
+  }, []);
+
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    const newInfluencer = {
-      id: editingInfluencer ? editingInfluencer.id : Date.now(),
+    const influencerData = {
       name: formData.name,
       followers: Number.parseInt(formData.followers),
       engagement: Number.parseFloat(formData.engagement),
@@ -87,14 +70,29 @@ export function InfluencerForm() {
       description: formData.description,
     }
 
-    if (editingInfluencer) {
-      setInfluencers(influencers.map((inf) => (inf.id === editingInfluencer.id ? newInfluencer : inf)))
-    } else {
-      setInfluencers([...influencers, newInfluencer])
-    }
+    try {
+        // Logika untuk UPDATE (jika sedang mengedit)
+        if (editingInfluencer) {
+            await fetch(`${API_URL}/influencers/${editingInfluencer.id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(influencerData),
+            });
+        } else {
+            // Logika untuk CREATE (jika menambah baru)
+            await fetch(`${API_URL}/influencers`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(influencerData),
+            });
+        }
 
-    resetForm()
-    setIsDialogOpen(false)
+        resetForm();
+        setIsDialogOpen(false);
+        fetchInfluencers(); // Ambil data terbaru setelah submit
+    } catch (error) {
+        console.error("Gagal menyimpan data:", error);
+    }
   }
 
   const resetForm = () => {
@@ -121,13 +119,22 @@ export function InfluencerForm() {
       cost: influencer.cost.toString(),
       experience: influencer.experience.toString(),
       category: influencer.category,
-      description: influencer.description,
+      description: influencer.description || "",
     })
     setIsDialogOpen(true)
   }
 
-  const handleDelete = (id: number) => {
-    setInfluencers(influencers.filter((inf) => inf.id !== id))
+  const handleDelete = async (id: number) => {
+    if (window.confirm("Apakah Anda yakin ingin menghapus influencer ini?")) {
+        try {
+            await fetch(`${API_URL}/influencers/${id}`, {
+                method: 'DELETE',
+            });
+            fetchInfluencers(); // Ambil data terbaru setelah menghapus
+        } catch (error) {
+            console.error("Gagal menghapus data:", error);
+        }
+    }
   }
 
   const formatNumber = (num: number) => {
@@ -148,6 +155,9 @@ export function InfluencerForm() {
   }
 
   return (
+    // ... sisa dari JSX Anda tidak berubah, salin dari sini ke bawah
+    // dari <div className="space-y-6 animate-in fade-in duration-700">
+    // hingga penutupnya
     <div className="space-y-6 animate-in fade-in duration-700">
       {/* Header */}
       <div className="flex justify-between items-center">
@@ -155,7 +165,12 @@ export function InfluencerForm() {
           <h2 className="text-2xl font-bold">Manajemen Influencer</h2>
           <p className="text-muted-foreground">Kelola data influencer untuk analisis SAW</p>
         </div>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <Dialog open={isDialogOpen} onOpenChange={(isOpen) => {
+            setIsDialogOpen(isOpen);
+            if (!isOpen) {
+                resetForm();
+            }
+        }}>
           <DialogTrigger asChild>
             <Button className="bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary transition-all duration-300">
               <Plus className="w-4 h-4 mr-2" />
