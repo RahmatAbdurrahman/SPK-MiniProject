@@ -3,6 +3,11 @@ import cors from 'cors';
 import influencerRoutes from './routes/influencers';
 // Impor rute criteria yang baru dibuat
 import criteriaRoutes from './routes/criteria';
+import cors from 'cors';
+
+
+app.use(cors(corsOptions)); // Terapkan konfigurasi
+app.use(express.json());
 
 const app = express();
 const PORT = 3001;
@@ -21,3 +26,9 @@ app.get('/', (req, res) => {
 app.listen(PORT, () => {
   console.log(`🚀 Server berjalan di http://localhost:${PORT}`);
 });
+
+// Konfigurasi CORS
+const corsOptions = {
+  origin: 'https://spk-mini-project.vercel.app', // Ganti dengan URL Vercel Anda
+  optionsSuccessStatus: 200 
+};
