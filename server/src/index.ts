@@ -1,34 +1,32 @@
 import express from 'express';
 import cors from 'cors';
 import influencerRoutes from './routes/influencers';
-// Impor rute criteria yang baru dibuat
 import criteriaRoutes from './routes/criteria';
-import cors from 'cors';
 
-
-app.use(cors(corsOptions)); // Terapkan konfigurasi
-app.use(express.json());
-
+// Inisialisasi aplikasi Express (hanya sekali)
 const app = express();
-const PORT = 3001;
+const PORT = process.env.PORT || 3001; // Gunakan port dari environment atau default 3001
 
-app.use(cors());
-app.use(express.json());
-
-app.use('/api/influencers', influencerRoutes);
-// Gunakan rute criteria untuk semua request yang diawali dengan /api/criteria
-app.use('/api/criteria', criteriaRoutes);
-
-app.get('/', (req, res) => {
-  res.send('🎉 Selamat! Server backend Anda sudah berjalan!');
-});
-
-app.listen(PORT, () => {
-  console.log(`🚀 Server berjalan di http://localhost:${PORT}`);
-});
-
-// Konfigurasi CORS
+// Konfigurasi CORS untuk mengizinkan permintaan dari Vercel
 const corsOptions = {
-  origin: 'https://spk-mini-project.vercel.app', // Ganti dengan URL Vercel Anda
+  origin: 'https://spk-mini-project.vercel.app', // Pastikan URL Vercel Anda benar
   optionsSuccessStatus: 200 
 };
+
+// Terapkan Middleware
+app.use(cors(corsOptions));
+app.use(express.json());
+
+// Gunakan Rute API
+app.use('/api/influencers', influencerRoutes);
+app.use('/api/criteria', criteriaRoutes);
+
+// Route pengetesan
+app.get('/', (req, res) => {
+  res.send('🎉 Server SPK Influencer berjalan!');
+});
+
+// Jalankan server
+app.listen(PORT, () => {
+  console.log(`🚀 Server berjalan di port ${PORT}`);
+});
