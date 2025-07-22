@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/dialog"
 
 // URL backend kita
-const API_URL = "http://localhost:3001/api";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
 
 export function InfluencerForm() {
   // Hapus data awal, kita akan ambil dari API

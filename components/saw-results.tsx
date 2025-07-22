@@ -9,7 +9,7 @@ import { Progress } from "@/components/ui/progress"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Calculator, Trophy, TrendingUp, Users, Star, DollarSign, Award, RefreshCw, CheckCircle } from "lucide-react"
 
-const API_URL = "http://localhost:3001/api";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
 
 // Hapus data dummy yang ada sebelumnya
 
